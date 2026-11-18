@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Emergency Vehicle Priority | 3D Traffic Command</title>
+<style>
+:root{--bg:#06101d;--panel:#0b1a2b;--panel2:#10243a;--line:#1d3854;--muted:#91a8c0;--txt:#edf6ff;--blue:#258cff;--green:#00e58b;--red:#ff4055;--amber:#ffc04b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1a3c61 0,#071321 48%,#030912 100%);color:var(--txt);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
+header{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#071525ed;border-bottom:1px solid #24435f;position:sticky;top:0;z-index:4}
+.brand{display:flex;align-items:center;gap:12px}.brand .mark{font-size:34px}.brand h1{font-size:17px;line-height:1.2;margin:0}.brand small{color:#9bb3cb;font-size:11px}
+nav{display:flex;gap:7px}button,select{font:inherit}button{cursor:pointer;color:#eaf4ff;background:#10243a;border:1px solid #294764;border-radius:8px;padding:9px 12px;font-weight:650}button:hover{filter:brightness(1.2)}button:disabled{opacity:.4;cursor:not-allowed}.navactive,.primary{background:linear-gradient(110deg,#1264bd,#1689ef);border-color:#319aff}.success{background:linear-gradient(110deg,#008b5c,#00bd7c);border-color:#00d995}
+.shell{max-width:1800px;margin:auto;padding:12px}.layout{display:grid;grid-template-columns:240px minmax(360px,1fr) 285px;gap:12px}
+.panel{background:linear-gradient(155deg,#0d2034,#081625);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 12px 30px #0004}.panel h2{font-size:13px;margin:0;padding:12px 13px;border-bottom:1px solid #1b3853;letter-spacing:.3px;text-transform:uppercase;color:#cfe4f8}.section{padding:11px 13px;border-bottom:1px solid #19344e}.section:last-child{border:0}.muted,.hint{color:var(--muted)}.hint{font-size:11px}
+.actionstack{display:grid;grid-template-columns:1fr 1fr;gap:7px}.actionstack .primary{grid-column:1/-1;text-align:center}.vehicle{display:flex;align-items:center;gap:9px;padding:8px;margin:5px 0;background:#0a1b2c;border:1px solid #1c3853;border-radius:8px;cursor:pointer}.vehicle.sel{border-color:#ff5969;background:#301c2a}.vehicle .emoji{font-size:21px;width:27px;text-align:center}.vehicle small{display:block;color:var(--muted);font-size:10px}.vehicle strong{font-size:12px}
+label{display:block;color:#bfd2e5;font-size:11px;margin:9px 0 4px}input[type=range]{width:100%;accent-color:#2694ff}input[type=checkbox]{accent-color:#00d98a}.switch{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:11px;color:#c5d8ea}
+.stage{position:relative;height:650px;min-width:0;border:1px solid #24445f;border-radius:12px;overflow:hidden;background:#071321}.stage canvas{width:100%;height:100%;display:block}.toast{position:absolute;top:13px;left:50%;transform:translateX(-50%);padding:10px 16px;min-width:280px;text-align:center;border:1px solid #2d5975;background:#071a2bea;border-radius:10px;box-shadow:0 8px 24px #0008;pointer-events:none}.toast b{display:block;color:var(--green);font-size:13px}.toast span{font-size:11px;color:#c2d8eb}.cam{position:absolute;bottom:12px;left:12px;display:flex;gap:5px;flex-wrap:wrap}.cam button{font-size:10px;padding:7px 9px;background:#081b2ceF}
+.info .metric{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid #18334c;font-size:11px}.metric:last-child{border:0}.metric b{font-variant-numeric:tabular-nums;text-align:right}.green{color:var(--green)}.red{color:var(--red)}.amber{color:var(--amber)}
+.signalgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:9px}.signal{text-align:center;background:#071522;border:1px solid #1a354d;border-radius:7px;padding:6px 1px}.lamp{height:13px;width:13px;border-radius:50%;background:#253341;margin:3px auto 6px}.lamp.red.on{background:#ff4055;box-shadow:0 0 12px #ff4055}.lamp.yellow.on{background:#ffc04b;box-shadow:0 0 12px #ffc04b}.lamp.green.on{background:#00e58b;box-shadow:0 0 12px #00e58b}.signal small{font-size:9px;color:#c2d4e5}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}.kpi{background:#0b1b2c;border:1px solid var(--line);border-radius:10px;padding:12px}.kpi span{display:block;color:var(--muted);font-size:10px}.kpi b{font-size:22px}.lower{display:grid;grid-template-columns:1fr 1fr;gap:12px}.box{background:#0b1b2c;border:1px solid var(--line);border-radius:10px;padding:13px}.box h3{font-size:12px;margin:0 0 10px}.log{height:110px;overflow:auto;font-size:10px;color:#a9c3db}.log div{padding:4px 0;border-bottom:1px solid #19344e}.barrow{font-size:10px;color:#b7cce0;margin:8px 0}.bar{height:8px;border-radius:8px;background:#1a344d;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#258cff,#00e58b);width:0%}
+#flow{width:100%;height:125px;display:block;background:#071522;border:1px solid #193650;border-radius:8px}
+footer{text-align:center;color:#718aa4;font-size:10px;padding:15px}
+@media(max-width:1120px){.layout{grid-template-columns:220px 1fr}.info{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr)}.info h2{grid-column:1/-1}.info .section{border-right:1px solid #19344e}}
+@media(max-width:760px){header{height:auto;align-items:flex-start;gap:10px;flex-direction:column;padding:12px}nav{flex-wrap:wrap}.layout{display:flex;flex-direction:column}.stage{height:480px}.info{display:block}.kpis{grid-template-columns:repeat(2,1fr)}.lower{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="mark">🚑</div><div><h1>EMERGENCY VEHICLE PRIORITY TRAFFIC SIMULATION</h1><small>3D Computer Graphics · Intelligent Intersection Control</small></div></div>
+ <nav><button class="navactive" onclick="document.querySelector('#sim').scrollIntoView({behavior:'smooth'})">◉ Simulation</button><button onclick="document.querySelector('#analytics').scrollIntoView({behavior:'smooth'})">▥ Analytics</button><button onclick="document.querySelector('#settings').scrollIntoView({behavior:'smooth'})">⚙ Settings</button><button onclick="showAbout()">ⓘ About</button></nav>
+</header>
+<div class="shell" id="sim">
+<div class="layout">
+<aside class="panel">
+ <h2>Simulation controls</h2>
+ <div class="section actionstack"><button class="primary success" id="start">▶ Start simulation</button><button id="pause">Ⅱ Pause</button><button id="reset">↻ Reset</button><button id="step">▸ Step</button></div>
+ <div class="section"><b style="font-size:12px">Vehicle selection</b>
+  <div class="vehicle sel" data-type="ambulance"><span class="emoji">🚑</span><div><strong>Ambulance</strong><small>Emergency response</small></div></div>
+  <div class="vehicle" data-type="police"><span class="emoji">🚓</span><div><strong>Police car</strong><small>Emergency response</small></div></div>
+  <div class="vehicle" data-type="fire"><span class="emoji">🚒</span><div><strong>Fire truck</strong><small>Emergency response</small></div></div>
+  <div class="vehicle" data-type="car"><span class="emoji">🚗</span><div><strong>Normal car</strong><small>Regular traffic</small></div></div>
+  <div class="vehicle" data-type="bus"><span class="emoji">🚌</span><div><strong>Bus</strong><small>Public transport</small></div></div>
+  <div class="vehicle" data-type="truck"><span class="emoji">🚚</span><div><strong>Truck</strong><small>Regular traffic</small></div></div>
+  <button id="addvehicle" style="width:100%;margin-top:5px">＋ Add selected vehicle</button>
+ </div>
+ <div class="section" id="settings"><b style="font-size:12px">Environment & settings</b>
+  <label>Simulation speed <b id="speedtxt">1.0×</b></label><input id="speed" type="range" min=".5" max="3" step=".5" value="1">
+  <label>Traffic density <b id="densitytxt">8 vehicles</b></label><input id="density" type="range" min="4" max="16" value="8">
+  <label>Detection distance <b id="detecttxt">85 m</b></label><input id="detect" type="range" min="25" max="150" value="85">
+  <div class="switch"><span>Show priority path</span><input id="showpath" type="checkbox" checked></div>
+  <div class="switch"><span>Show detection radius</span><input id="showradius" type="checkbox" checked></div>
+  <div class="switch"><span>Show vehicle labels</span><input id="showlabels" type="checkbox" checked></div>
+  <div class="switch"><span>Night mode</span><input id="night" type="checkbox" checked></div>
+  <button id="siren" type="button" aria-pressed="false" style="width:100%;margin-top:7px">Enable siren · muted</button>
+ </div>
+</aside>
+<section class="stage"><canvas id="view"></canvas><div class="toast"><b id="toasttitle">SYSTEM READY · NORMAL TRAFFIC</b><span id="toastmsg">Start the simulation to activate emergency detection</span></div><div class="cam"><button onclick="cameraMode('main')">Main view</button><button onclick="cameraMode('top')">Top view</button><button onclick="cameraMode('side')">Side view</button><button onclick="cameraMode('follow')">Follow emergency</button></div></section>
+<aside class="panel info">
+ <h2>Live traffic intelligence</h2>
+ <div class="section">
+  <div class="metric"><span>Emergency vehicle</span><b id="status" class="amber">Standby</b></div>
+  <div class="metric"><span>Distance to junction</span><b id="distance">85 m</b></div>
+  <div class="metric"><span>Detection threshold</span><b id="threshold">85 m</b></div>
+  <div class="metric"><span>Priority controller</span><b id="priority">Inactive</b></div>
+  <div class="metric"><span>Current speed</span><b id="currentspeed">0 km/h (stopped)</b></div>
+ </div>
+ <div class="section"><b style="font-size:12px">Signal status by approach</b><div class="signalgrid">
+  <div class="signal"><div class="lamp red on" id="nR"></div><div class="lamp yellow" id="nY"></div><div class="lamp green" id="nG"></div><small>North</small></div>
+  <div class="signal"><div class="lamp red on" id="sR"></div><div class="lamp yellow" id="sY"></div><div class="lamp green" id="sG"></div><small>South</small></div>
+  <div class="signal"><div class="lamp red" id="eR"></div><div class="lamp yellow" id="eY"></div><div class="lamp green on" id="eG"></div><small>East</small></div>
+  <div class="signal"><div class="lamp red" id="wR"></div><div class="lamp yellow" id="wY"></div><div class="lamp green on" id="wG"></div><small>West</small></div>
+ </div><div class="hint" id="signalcaption">East–West traffic currently has green.</div></div>
+ <div class="section"><b style="font-size:12px">Waiting time monitor</b>
+  <div class="metric"><span>Emergency vehicle</span><b id="ambwait" class="green">0.0 s</b></div><div class="metric"><span>Normal traffic average</span><b id="normalwait">0.0 s</b></div><div class="metric"><span>Estimated time saved</span><b id="saved" class="green">0.0 s</b></div>
+ </div>
+ <div class="section"><b style="font-size:12px">Event log</b><div class="log" id="log"><div>System ready. No emergency detected.</div></div></div>
+</aside>
+</div>
+<div class="kpis" id="analytics">
+ <div class="kpi"><span>Vehicles in simulation</span><b id="total">8</b></div><div class="kpi"><span>Priority activations</span><b id="activations">0</b></div><div class="kpi"><span>Emergency vehicles passed</span><b id="passed">0</b></div><div class="kpi"><span>Elapsed simulation time</span><b id="elapsed">0.0 s</b></div>
+</div>
+<div class="lower">
+ <div class="box"><h3>Traffic flow · comparative waiting time</h3><canvas id="flow" width="700" height="180"></canvas><div class="barrow">Normal traffic average <div class="bar"><i id="normalbar"></i></div></div><div class="barrow">Emergency vehicle waiting <div class="bar"><i id="ambbar"></i></div></div></div>
+ <div class="box"><h3>System status & capabilities</h3><div class="metric"><span>3D intersection environment</span><b class="green">ONLINE</b></div><div class="metric"><span>Emergency detection engine</span><b class="green">ONLINE</b></div><div class="metric"><span>Adaptive signal controller</span><b class="green">ONLINE</b></div><div class="metric"><span>Vehicle movement engine</span><b class="green">ONLINE</b></div><div class="metric"><span>Analytics & reporting</span><b class="green">ONLINE</b></div><button id="export" style="width:100%;margin-top:12px">⇩ Export simulation report (CSV)</button></div>
+</div>
+</div>
+<footer>Academic demonstration prototype · All vehicle sensing, distance and signal actions are simulated in software; no real traffic infrastructure is controlled.</footer>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script type="module" src="simulation.js"></script>
+</body></html>
